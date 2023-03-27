@@ -1,0 +1,68 @@
+Group 7 Parking System 
+----------------------------------- 
+Ticket Number 0001 
+----------------------------------------
+Location:	 Kisumu,Mega_plaza
+Slot booked:	  006
+ Vehicle Reg: 	iuyg
+Vehicle Cat:	  Standard
+Time in:	  01:27:19
+Time out:	 14:12:05.167336519
+Price:	 2323
+----------------------------------------------------
+Thank you
+------------------------------------------------
+
+ 
+ 
+Group 7 Parking System 
+----------------------------------- 
+Ticket Number 0001 
+----------------------------------------
+Location:	 null
+Slot booked:	  
+ Vehicle Reg: 	
+Vehicle Cat:	  null
+Time in:	  01:33:25
+Time out:	 14:12:05.172919469
+Price:	 2323
+----------------------------------------------------
+Thank you
+------------------------------------------------
+
+ 
+ 
+Group 7 Parking System 
+----------------------------------- 
+Ticket Number 0001 
+----------------------------------------
+Location:	 Chuka,Town
+Slot booked:	  003
+ Vehicle Reg: 	kjhgt
+Vehicle Cat:	  Standard
+Time in:	  13:56:48
+Time out:	 14:12:05.217452823
+Price:	 2323
+----------------------------------------------------
+Thank you
+------------------------------------------------
+
+ 
+ 
+Group 7 Parking System 
+----------------------------------- 
+Ticket Number 0001 
+----------------------------------------
+Location:	 Narok,Town
+Slot booked:	  009
+ Vehicle Reg: 	kjhgf
+Vehicle Cat:	  Large
+Time in:	  14:11:31
+Time out:	 14:12:05.224786439
+Price:	 2323
+----------------------------------------------------
+Thank you
+------------------------------------------------
+
+ 
+ 
