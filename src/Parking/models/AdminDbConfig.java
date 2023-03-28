@@ -14,8 +14,6 @@ public class AdminDbConfig {
     public static String url="jdbc:mysql://localhost:3306/PsignUp";
     public static  String password ="";
     public static String username="root";
-
-
     public static Object executeQuery(String query,boolean... t) throws SQLException {
 
         Connection connection;
@@ -31,10 +29,9 @@ public class AdminDbConfig {
                 }
                 if (query.contains("select slot_location from added_slot where slot_Id=")) {
                     System.out.println(query);
-
                     while(resultSet.next()){
                         String loc = resultSet.getString("slot_location");
-                        System.out.println("---------"+loc);
+                        System.out.println(loc);
                         return loc;
                     }
                 }

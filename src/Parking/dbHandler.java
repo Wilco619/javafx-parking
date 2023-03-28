@@ -118,6 +118,7 @@ public class dbHandler {
             if (resultSet != null){
                 try{
                     resultSet.close();
+                    connection.close();
                 }catch (SQLException e){
                     e.printStackTrace();
                 }
@@ -145,7 +146,7 @@ public class dbHandler {
             }
         }
     }
-    public static void logInUser(ActionEvent event, String usrName, String password){
+    public static void logInUser(ActionEvent event, String usrName, String password) throws SQLException {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
@@ -197,10 +198,11 @@ public class dbHandler {
                     e.printStackTrace();
                 }
             }
+            connection.close();
         }
     }
 
-    public static void adminSignup(ActionEvent event,String admin_id,String name, String usrName, String email, Integer phone, String pwd, String pwdRepeat){
+    public static void adminSignup(ActionEvent event,String admin_id,String name, String usrName, String email, Integer phone, String pwd, String pwdRepeat) throws SQLException {
         Connection connection = null;
         PreparedStatement psInsert = null;
         PreparedStatement psCheck_admin = null;
@@ -263,10 +265,11 @@ public class dbHandler {
                     e.printStackTrace();
                 }
             }
+            connection.close();
         }
 
     }
-    public static void adminLogin(ActionEvent event, String admin_id, String usrName, String pwd, Integer phone){
+    public static void adminLogin(ActionEvent event, String admin_id, String usrName, String pwd, Integer phone) throws SQLException {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
@@ -320,11 +323,12 @@ public class dbHandler {
                     e.printStackTrace();
                 }
             }
+            connection.close();
         }
     }
 
     //adding slot
-    public static void addSlot(ActionEvent event, String slot_id, String slot_location) {
+    public static void addSlot(ActionEvent event, String slot_id, String slot_location) throws SQLException {
         Connection connection = null;
         PreparedStatement psInsert = null;
         PreparedStatement psCheckUserExists = null;
@@ -383,10 +387,11 @@ public class dbHandler {
                     e.printStackTrace();
                 }
             }
+            connection.close();
         }
     }
     //selecting parking space
-    public static void selectSlot(ActionEvent event, String slot_id, String reg_No, String v_category) {
+    public static void selectSlot(ActionEvent event, String slot_id, String reg_No, String v_category) throws SQLException {
         Connection connection = null;
         PreparedStatement psInsert = null;
         PreparedStatement psCheckUserExists = null;
@@ -447,10 +452,11 @@ public class dbHandler {
                     e.printStackTrace();
                 }
             }
+            connection.close();
         }
     }
     // deleting selected slots
-    public static void deleteSlot(ActionEvent event, String slot_id) {
+    public static void deleteSlot(ActionEvent event, String slot_id) throws SQLException {
         Connection connection = null;
         PreparedStatement psInsert = null;
         PreparedStatement psCheckUserExists = null;
@@ -468,10 +474,11 @@ public class dbHandler {
                 alert.setContentText("Please Enter Viable Slot!");
                 alert.show();
             } else {
-                psInsert = connection.prepareStatement("Delete FROM vehicle WHERE slot_id = ?");
+                String delete = "Delete FROM vehicle WHERE slot_id = ?";
+                String select = "select slot_id,location from ";
+                psInsert = connection.prepareStatement(delete);
                 psInsert.setString(1,slot_id);
                 psInsert.executeUpdate();
-
                 System.out.println("Slot Removed successfully!");
                 Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                 alert.setContentText("Slot removed successfully!");
@@ -508,6 +515,7 @@ public class dbHandler {
                     e.printStackTrace();
                 }
             }
+            connection.close();
         }
     }
     // delete slot from free list
@@ -529,9 +537,11 @@ public class dbHandler {
                 alert.setContentText("Slot not found!");
                 alert.show();
             } else {
-                psInsert = connection.prepareStatement("Delete FROM added_slot WHERE slot_id = ?");
-                psInsert.setString(1,slot_id);
-                psInsert.executeUpdate();
+                userTablesController utc =new userTablesController();
+                String location = (String) utc.executeQuery("select slot_Location from added_slot where slot_Id='"+slot_id+"'");
+                utc.executeQuery("Delete FROM vehicle WHERE slot_id ='"+slot_id+"'");
+                utc.executeQuery("insert into added_slots(slot_Id,slot_Location)values('"+slot_id+"','"+location+"')");
+
 
                 System.out.println("Slot Removed successfully!");
                 Alert alert = new Alert(Alert.AlertType.ERROR);

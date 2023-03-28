@@ -1,6 +1,7 @@
 package Parking;
 
 import java.net.URL;
+import java.sql.SQLException;
 import java.util.ResourceBundle;
 
 import javafx.event.ActionEvent;
@@ -36,7 +37,11 @@ public class Dashboard1Controller implements Initializable {
         logIn_btn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                dbHandler.logInUser(event, loginUsrName.getText(), loginPwd.getText());
+                try {
+                    dbHandler.logInUser(event, loginUsrName.getText(), loginPwd.getText());
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
                 loginUsrName.setText("");loginPwd.setText("");
             }
         });

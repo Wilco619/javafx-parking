@@ -3,11 +3,9 @@ import java.io.IOException;
 import java.math.RoundingMode;
 import java.sql.*;
 import java.text.DecimalFormat;
-import java.time.LocalDate;
 import java.net.URL;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Locale;
 import java.util.ResourceBundle;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -114,9 +112,7 @@ public class UsrDashboardController implements Initializable {
     private TableColumn <SlotFree_table,String> c_fslot;
     @FXML
     private TableColumn <SlotFree_table, String> c_flocation;
-//    private Object totalAmount_;
-
-
+    userTablesController utc = new userTablesController();
 
 
 
@@ -133,29 +129,38 @@ public class UsrDashboardController implements Initializable {
         Timeline timeline;
         timeline = new Timeline(new KeyFrame(Duration.seconds(2),event->{
             System.out.println(34567);
-            updatePayment();
             slotSelect_btn.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent event) {
-                    dbHandler.selectSlot(event, pick_slot_Field.getText(),regNo_Field.getText(),vCategory_Combo.getValue());
-
+                    try {
+                        tryDelete(pick_slot_Field.getText());
+//                        tryUnbook();
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
                     pick_slot_Field.setText("");regNo_Field.setText("");
-
                 }
             });
-            showPickTable();
+            try {
+                showPickTable();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
         }));
 
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
-
+        Timeline timeline2;
+        timeline2 = new Timeline(new KeyFrame(Duration.seconds(2),event->{
+                showFree_table();
+        }));
+        timeline2.setCycleCount(Timeline.INDEFINITE);
+        timeline2.play();
 
         logout_btn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
                 dbHandler.changeScene(event, "Dashboard1.fxml", "Log In!",null);
-                System.out.println(vCategory_Combo.getValue());
-
             }
         });
 
@@ -163,30 +168,53 @@ public class UsrDashboardController implements Initializable {
         unbook_btn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                dbHandler.deleteSlot(event, unbookField.getText());
+                try {
+                    tryUnbook(unbookField.getText());
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
                 ticketArea.setText("");
                 unbookField.setText("");
             }
         });
-
-
-        //pay btn
         pay_btn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                dbHandler.selectSlot(event, pick_slot_Field.getText(),regNo_Field.getText(),vCategory_Combo.getValue());
+                try {
+                    dbHandler.selectSlot(event, pick_slot_Field.getText(),regNo_Field.getText(),vCategory_Combo.getValue());
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
                 ticket_Area();
             }
         });
 
     }
 
+    private void tryUnbook(String slot_id) throws SQLException {
+        ArrayList<String> arr = (ArrayList<String>) utc.executeQuery("select * from Picked_slot where slot_Id='"+slot_id+"';");
+        insertToTable(arr);
+        utc.executeQuery("delete from Picked_slot where slot_Id='"+slot_id+"';");
+    }
+    Timeline t2 = new Timeline();
+
+    private void insertToTable(ArrayList<String> arr) throws SQLException {
+        utc.executeQuery("insert into added_slot(slot_Id,slot_Location)values('"+arr.get(0)+"','"+arr.get(1)+"')");
+
+    }
+
+    public void tryDelete(String slot_id) throws SQLException {
+        String time = String.valueOf(LocalTime.now());
+        String q2 = (String) utc.executeQuery("select slot_Location from added_slot where slot_Id='"+slot_id+"'");
+        utc.executeQuery("insert into Picked_slot(slot_id,slot_Location,reg_No,v_category,time_in) values('"+slot_id+"','"+q2+"','"+regNo_Field.getText()+"','"+vCategory_Combo.getValue()+"','"+time+"');");
+        utc.executeQuery("delete from added_slot where id='"+slot_id+"'");
+    }
     public void setUserInformation(String usrName){
         usrName_lbl.setText("Welcome " + usrName + "!");
     }
 
     //pick table
-    public void showPickTable(){
+    public void showPickTable() throws SQLException {
         ObservableList<SlotPick_table> list = (ObservableList<SlotPick_table>) getTableList(false);
         c_id.setCellValueFactory(new PropertyValueFactory<SlotPick_table, Integer>("id"));
         c_slot.setCellValueFactory(new PropertyValueFactory<SlotPick_table, String>("slot_id"));
@@ -198,18 +226,17 @@ public class UsrDashboardController implements Initializable {
 
 
     //picked slot
-    public static   Object getTableList(boolean dcd) {
+    public static   Object getTableList(boolean dcd) throws SQLException {
         ArrayList<Object> prime = new ArrayList<>();
         ObservableList<SlotPick_table> tableList = FXCollections.observableArrayList();
         Connection conn = dbHandler.getConnection();
-        String query = " SELECT added_slot.id, added_slot.slot_id, added_slot.slot_Location, vehicle.reg_No, vehicle.v_category, vehicle.time_in FROM added_slot INNER JOIN vehicle ON added_slot.slot_id = vehicle.slot_id";
+
+        String query = "select * from Picked_slot;";
         Statement st;
         ResultSet rs;
         float payment = 0;
         ArrayList<Float> vals=new ArrayList<Float>();
         float billed =0;
-
-
         try {
             st = conn.createStatement();
             rs = st.executeQuery(query);
@@ -218,16 +245,17 @@ public class UsrDashboardController implements Initializable {
             UsrDashboardController uc = new UsrDashboardController();
 
             while (rs.next()) {
-                LocalTime myObj = LocalTime.now();
-                String[] currenttime = String.valueOf(myObj).split(":", 3);
+                LocalTime time_now = LocalTime.now();
+                String[] currenttime = String.valueOf(time_now).split(":", 3);
                 time_in = rs.getString("time_in");
                 ArrayList<Float> arr = new ArrayList<Float>();
                 String[] dbtime = time_in.split(":", 3);
-                for (int i = 0; i < dbtime.length; i++) {
-                    float y = parseFloat(currenttime[i]) - parseFloat(dbtime[i]);
-                    arr.add(y);
-                }
-//                System.out.println(arr.get(0)+"==============,"+ arr.get(1));
+                float x=0;
+//                for (int i = 0; i < dbtime.length; i++) {
+//                    float y = parseFloat(currenttime[i]) - parseFloat(dbtime[i]);
+//                    System.out.println("curre_:"+currenttime[i]+"----db"+dbtime[i]);
+//                    arr.add(y);
+//                }
                 float currt = (float) (parseFloat(String.valueOf(arr.get(0))) * 3600 + parseFloat(String.valueOf(arr.get(1))) * 60 + parseFloat(String.valueOf(arr.get(2)))*0.01666666666);
                 float billedTime = currt/3600;
                 billed+=billedTime;
@@ -250,19 +278,19 @@ public class UsrDashboardController implements Initializable {
         } catch (Exception e) {
             System.out.println(e.getMessage());
             e.printStackTrace();
+        }finally {
+            conn.close();
         }
         if (dcd ==true){
-            System.out.println(billed+"-------");
             return vals;
         }else{
             return tableList;
         }
     }boolean f= true;
-    public void updatePayment(){
+    public void updatePayment() throws SQLException {
         DecimalFormat df = new DecimalFormat("##.##");
         df.setRoundingMode(RoundingMode.DOWN);
-        System.out.println(getTableList(true).toString());
-        float num = Float.parseFloat(getTableList(true).toString().substring(1,5));
+                float num = Float.parseFloat(getTableList(true).toString().substring(1,5));
         int startIndex=12;
         if(f==true){
             startIndex =12;
@@ -274,7 +302,6 @@ public class UsrDashboardController implements Initializable {
         totalAmount.setText(String.valueOf(df.format(num)));
         totalTime.setText(time);
 
-        System.out.println(!f);
         f=!f;
     }
 
@@ -287,24 +314,15 @@ public class UsrDashboardController implements Initializable {
         c_fslot.setCellValueFactory(new PropertyValueFactory<SlotFree_table, String>("slot_id"));
         c_flocation.setCellValueFactory(new PropertyValueFactory<SlotFree_table, String>("slot_Location"));
         free_slots.setItems(list);
-
         //initial filteredList
         FilteredList<SlotFree_table> filteredData = new FilteredList<>(list, b -> true);
-
         location_search.textProperty().addListener((observable, oldValue, newValue) -> {
-
-
             filteredData.setPredicate(slotFree_table -> {
                 timeline2Time=23;
-
-
-
                 //if no search value then display all records or whatever records
                 if (newValue.isEmpty() || newValue.isBlank() || newValue == null){
-
                     return true;
                 }
-
                 String searchKeyword = newValue.toLowerCase();
 
                 if (slotFree_table.getSlot_id().toString().indexOf(searchKeyword) > -1){
@@ -318,10 +336,8 @@ public class UsrDashboardController implements Initializable {
         });
 
         SortedList<SlotFree_table> sortedData = new SortedList<>(filteredData);
-
         //bind sorted result with table view
         sortedData.comparatorProperty().bind(free_slots.comparatorProperty());
-
         //apply filtered and sorted data to the table view
         free_slots.setItems(sortedData);
     }

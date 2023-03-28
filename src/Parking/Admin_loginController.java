@@ -10,6 +10,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 
 import java.net.URL;
+import java.sql.SQLException;
 import java.util.ResourceBundle;
 
 public class Admin_loginController implements Initializable {
@@ -33,7 +34,11 @@ public class Admin_loginController implements Initializable {
         admin_login.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                dbHandler.adminLogin(event, idField.getText(),usrNameField.getText(),pwdField.getText(),null);
+                try {
+                    dbHandler.adminLogin(event, idField.getText(),usrNameField.getText(),pwdField.getText(),null);
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
                 idField.setText("");usrNameField.setText("");pwdField.setText("");
             }
         });

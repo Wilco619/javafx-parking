@@ -20,6 +20,7 @@ import javafx.util.Duration;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ResourceBundle;
 
@@ -104,7 +105,11 @@ public class SettingsController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
-        showFree_table();
+        try {
+            showFree_table();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
         //timeline
         Timeline timeline;
         timeline = new Timeline(new KeyFrame(Duration.seconds(2),event->{}));
@@ -115,7 +120,11 @@ public class SettingsController implements Initializable {
         add_slot_btn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                dbHandler.addSlot(event, add_slot.getText(),add_location.getText());
+                try {
+                    dbHandler.addSlot(event, add_slot.getText(),add_location.getText());
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
                 add_slot.setText("");add_location.setText("");
             }
         });
@@ -130,7 +139,11 @@ public class SettingsController implements Initializable {
         register_btn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                dbHandler.adminSignup(event,idField.getText(), nameField.getText() , usrNameField.getText(), emailField.getText(), Integer.valueOf(phoneField.getText()), pwdField.getText(), pwdRepeatField.getText());
+                try {
+                    dbHandler.adminSignup(event,idField.getText(), nameField.getText() , usrNameField.getText(), emailField.getText(), Integer.valueOf(phoneField.getText()), pwdField.getText(), pwdRepeatField.getText());
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
                 idField.setText("");nameField.setText("");usrNameField.setText("");emailField.setText("");phoneField.setText("");pwdField.setText("");pwdRepeatField.setText("");
             }
         });
@@ -155,11 +168,14 @@ public class SettingsController implements Initializable {
                 rm_slot.setText("");
             }
         });
-
         rl_slot_btn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                dbHandler.deleteSlot(event, rl_slot.getText());
+                try {
+                    dbHandler.deleteSlot(event, rl_slot.getText());
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
                 rl_slot.setText("");
             }
         });
@@ -169,7 +185,7 @@ public class SettingsController implements Initializable {
 //    UsrDashboardController.display_min1(minOne);
 
     //free table
-    public void showFree_table(){
+    public void showFree_table() throws SQLException {
 //        test();
         ObservableList<SlotFree_table> list = getFreeTableList();
         c_fslot.setCellValueFactory(new PropertyValueFactory<SlotFree_table, String>("slot_id"));
@@ -215,7 +231,7 @@ public class SettingsController implements Initializable {
 
 
     //free slot
-    private ObservableList<SlotFree_table> getFreeTableList() {
+    private ObservableList<SlotFree_table> getFreeTableList() throws SQLException {
         ObservableList<SlotFree_table> freetableList = FXCollections.observableArrayList();
         Connection conn = dbHandler.getConnection();
         String query = "SELECT * FROM added_slot";
@@ -232,6 +248,8 @@ public class SettingsController implements Initializable {
         }catch (Exception e){
             System.out.println(e.getMessage());
             e.printStackTrace();
+        }finally {
+            conn.close();
         }
         return freetableList;
 
