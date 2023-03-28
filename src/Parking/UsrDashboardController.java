@@ -4,7 +4,12 @@ import java.math.RoundingMode;
 import java.sql.*;
 import java.text.DecimalFormat;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javafx.animation.KeyFrame;
@@ -185,7 +190,13 @@ public class UsrDashboardController implements Initializable {
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
-                ticket_Area();
+                try {
+                    ticket_Area();
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
         });
 
@@ -246,20 +257,17 @@ public class UsrDashboardController implements Initializable {
 
             while (rs.next()) {
                 LocalTime time_now = LocalTime.now();
-                String[] currenttime = String.valueOf(time_now).split(":", 3);
                 time_in = rs.getString("time_in");
                 ArrayList<Float> arr = new ArrayList<Float>();
-                String[] dbtime = time_in.split(":", 3);
                 float x=0;
-//                for (int i = 0; i < dbtime.length; i++) {
-//                    float y = parseFloat(currenttime[i]) - parseFloat(dbtime[i]);
-//                    System.out.println("curre_:"+currenttime[i]+"----db"+dbtime[i]);
-//                    arr.add(y);
-//                }
-                float currt = (float) (parseFloat(String.valueOf(arr.get(0))) * 3600 + parseFloat(String.valueOf(arr.get(1))) * 60 + parseFloat(String.valueOf(arr.get(2)))*0.01666666666);
-                float billedTime = currt/3600;
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+                ZoneId zone = ZoneId.of("America/Montreal");
+                ZonedDateTime dateTime1 = ZonedDateTime.of(2020, 5, 8, 16, 38, 37, 0, zone);
+                ZonedDateTime dateTime2 = ZonedDateTime.of(2020, 4, 8, 20, 18, 10, 0, zone);
+//                          float currt = (float) (parseFloat(String.valueOf(arr.get(0))) * 3600 + parseFloat(String.valueOf(arr.get(1))) * 60 + parseFloat(String.valueOf(arr.get(2)))*0.01666666666);
+                float billedTime = 909/3600;
                 billed+=billedTime;
-                Payments.add((float) (currt*0.0167));
+                Payments.add((float) (90*0.0167));
 
                 slotPickTable = new SlotPick_table(time_in, rs.getString("slot_id"), rs.getString("slot_Location"), rs.getString("reg_No"), rs.getString("v_category"));
                 tableList.add(slotPickTable);
@@ -309,6 +317,15 @@ public class UsrDashboardController implements Initializable {
 
     //free table
     public void showFree_table(){
+        LocalTime time1 = LocalTime.parse("18:47:30.549250046");
+        LocalTime time2 = LocalTime.now();
+        java.time.Duration duration = java.time.Duration.between(time1, time2);
+        long seconds = duration.getSeconds();
+        System.out.println(seconds);
+        int price = (int) (seconds*0.167);
+        totalAmount.setText(String.valueOf(price));
+        totalTime.setText(String.valueOf(duration.getSeconds()/3600)+" Hours");
+        System.out.println("------------------------------------------------------------------------");
 //        test();
         ObservableList<SlotFree_table> list = getFreeTableList();
         c_fslot.setCellValueFactory(new PropertyValueFactory<SlotFree_table, String>("slot_id"));
@@ -372,24 +389,29 @@ public class UsrDashboardController implements Initializable {
 
 
     //ticket
-    public void ticket_Area(){
+    public void ticket_Area() throws SQLException, IOException {
         String slot = pick_slot_Field.getText();
         String rg_no = regNo_Field.getText();
         String v_category = vCategory_Combo.getValue();
-//        Integer price = price.getText();
+        String location = PrintReciept.printReciet()[0];
+        String slot_ = PrintReciept.printReciet()[1];
+        String rg_no_ = PrintReciept.printReciet()[2];
+        String time_out = PrintReciept.printReciet()[3];
+        String time_in = PrintReciept.printReciet()[4];
+        String v_category_ = PrintReciept.printReciet()[3];
+        String price = PrintReciept.printReciet()[6];
         ticketArea.setText(ticketArea.getText() + "- - - - - - - - - - - - - - - - - - - - - - - - - -\n");
         ticketArea.setText(ticketArea.getText() + "           GROUP 7 PARKING SYSTEM              \n");
         ticketArea.setText(ticketArea.getText() + "- - - - - - - - - - - - - - - - - - - - - - - - - -\n");
         ticketArea.setText(ticketArea.getText() + "                 TICKET : 001                  \n");
         ticketArea.setText(ticketArea.getText() + "- - - - - - - - - - - - - - - - - - - - - - - - - -\n");
-        ticketArea.setText(ticketArea.getText() + "\t" + "LOCATION : " + " \n");
-        ticketArea.setText(ticketArea.getText() + "\t" + "STREET : " + " \n");
-        ticketArea.setText(ticketArea.getText() + "\t" + "SLOT BOOKED : " + "\t" +slot+ "\n");
-        ticketArea.setText(ticketArea.getText() + "\t" + "VEHICLE REG_NO : " + "\t" +rg_no+ "\n");
-        ticketArea.setText(ticketArea.getText() + "\t" + "VEHICLE CATEGORY : " + "\t" +v_category+ "\n");
-        ticketArea.setText(ticketArea.getText() + "\t" + "TIME IN : " + " \n");
-        ticketArea.setText(ticketArea.getText() + "\t" + "TIME OUT : " + " \n");
-        ticketArea.setText(ticketArea.getText() + "\t" + "PRICE : " + " \n");
+        ticketArea.setText(ticketArea.getText() + "\t" + "LOCATION : " +location+ " \n");
+        ticketArea.setText(ticketArea.getText() + "\t" + "SLOT BOOKED : " + "\t" +slot_+ "\n");
+        ticketArea.setText(ticketArea.getText() + "\t" + "VEHICLE REG_NO : " + "\t" +rg_no_+ "\n");
+        ticketArea.setText(ticketArea.getText() + "\t" + "VEHICLE CATEGORY : " + "\t" +v_category_+ "\n");
+        ticketArea.setText(ticketArea.getText() + "\t" + "TIME IN : "+time_in+ " \n");
+        ticketArea.setText(ticketArea.getText() + "\t" + "TIME OUT : " + LocalTime.now()+" \n");
+        ticketArea.setText(ticketArea.getText() + "\t" + "PRICE : " +price + " \n");
         ticketArea.setText(ticketArea.getText() + "- - - - - - - - - - - - - - - - - - - - - - - - - -\n");
         ticketArea.setText(ticketArea.getText() + "                   THANK YOU                   \n");
         ticketArea.setText(ticketArea.getText() + "- - - - - - - - - - - - - - - - - - - - - - - - - -\n");

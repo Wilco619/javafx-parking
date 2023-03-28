@@ -27,7 +27,7 @@ public class AdminDbConfig {
                 if(query.contains("SELECT DATE(date_) as day, AVG(amount) as average FROM payments")){
                     return  barGraph(resultSet);
                 }
-                if (query.contains("select slot_location from added_slot where slot_Id=")) {
+                if (query.contains("select slot_location from Picked_slot where slot_Id=")) {
                     System.out.println(query);
                     while(resultSet.next()){
                         String loc = resultSet.getString("slot_location");
@@ -41,7 +41,7 @@ public class AdminDbConfig {
                 if (query.contains("select * from vehicle")) {
                     return  vehicleTable(resultSet);
                 }
-                if (query.contains("SELECT * FROM vehicle")) {
+                if (query.contains("SELECT * FROM Picked_slot")) {
                     return  printReciept(resultSet);
                 }
                 connection.close();
@@ -103,7 +103,6 @@ public class AdminDbConfig {
             String time_in =resultSet.getString("time_in");
             String cat = resultSet.getString("v_category");
             arr.add(Arrays.toString(new String[]{reg_number, slot_id, time_in, cat}));
-
             System.out.println(slot_id);
         }
 
